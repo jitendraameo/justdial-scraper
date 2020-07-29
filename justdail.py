@@ -1,8 +1,7 @@
 from bs4 import BeautifulSoup
 import urllib
-import request
-import urllib.request
 import requests
+import urllib.request
 import csv
 
 
@@ -68,17 +67,22 @@ def get_rating(body):
 	return rating
 
 def get_rating_count(body):
-	text = body.find('span', {'class':'rt_count'}).string
-
-	# Get only digits
-	rating_count =''.join(i for i in text if i.isdigit())
-	return rating_count
+	text = body.find('span', {'class':'rt_count'})
+	print("rt count>>>", text)
+	if text:
+	    text = text.string
+		# rating_count =''.join(i for i in text if i.isdigit())
+		
+	    return 1000
+	else:
+		return 0	
 
 def get_address(body):
 	return body.find('span', {'class':'mrehover'}).text.strip()
 
 def get_location(body):
 	text = body.find('a', {'class':'rsmap'})
+	print("location testing>>>>>>>>>>>", text)
 	if text == None:
 		return
 	text_list = text['onclick'].split(",")
@@ -88,11 +92,16 @@ def get_location(body):
 	
 	return latitutde + ", " + longitude
 
+def get_category(body):
+	return body.find('a', {'class':'lng_commn'}).text.strip()
+    
+
+
 page_number = 1
 service_count = 1
 
 
-fields = ['Name', 'Phone', 'Rating', 'Rating Count', 'Address', 'Location']
+fields = ['Name', 'Phone', 'Rating', 'Rating Count', 'Address', 'Location', 'Category']
 out_file = open('hardware.csv','w')
 csvwriter = csv.DictWriter(out_file, delimiter=',', fieldnames=fields)
 
@@ -124,6 +133,9 @@ while True:
 		count = get_rating_count(service_html)
 		address = get_address(service_html)
 		location = get_location(service_html)
+		category = get_category(service_html)
+	
+
 		if name != None:
 			dict_service['Name'] = name
 		if phone != None:
@@ -136,7 +148,11 @@ while True:
 		if address != None:
 			dict_service['Address'] = address
 		if location != None:
-			dict_service['Address'] = location
+			dict_service['Location'] = location
+		if category != None:
+			dict_service['Category'] = category	
+
+
 
 		# Write row to CSV
 		csvwriter.writerow(dict_service)
